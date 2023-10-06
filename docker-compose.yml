@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  api:
+    build: ./api_rest
+    container_name: api
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    environment:
+      API_PORT: ${API_PORT}
+      DATABASE_HOST: db
+      DATABASE: ${DATABASE} 
+      DATABASE_PORT: 3306
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      TOKEN_SECRET: ${TOKEN_SECRET}
+      TOKEN_EXPIRATION: ${TOKEN_EXPIRATION}
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: mariadb:10.9.4
+    container_name: db
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+      MARIADB_USER: ${DATABASE_USERNAME}
+      MARIADB_PASSWORD: ${DATABASE_PASSWORD}
+      MARIADB_DATABASE: ${DATABASE}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      retries: 3
+    ports:
+      - 3306:3306
+
+volumes:
+  mariadb_data: {}
